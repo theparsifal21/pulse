@@ -197,3 +197,5 @@ button.pri{background:var(--ach);color:white;border-radius:8px}button.pri:hover{
 
 /* Text-only wordmark matching PANEL */
 .logo,.mobile-brand{gap:0}.brand-dot{color:var(--ac);font-weight:inherit}
+
+.appearance-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;margin-bottom:10px;max-width:640px}.swatches{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.swatch{width:28px;height:28px;padding:0;border:2px solid transparent;border-radius:50%}.swatch[aria-pressed=true]{border-color:var(--tx)}.swatches input{width:36px;height:32px;padding:0;border:0;background:none}.reset-colors{background:var(--bg3)}.hero,#player.expanded{background:var(--bg2)}.mobile-quick b{background:var(--bg3);color:var(--ac2)}.cv{background-color:var(--bg3)}.mobile-icon{background:var(--bg3)}.page-tabs a.selected{background:var(--ach);color:white}
