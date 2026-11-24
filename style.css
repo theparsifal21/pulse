@@ -194,3 +194,6 @@ button.pri{background:var(--ach);color:white;border-radius:8px}button.pri:hover{
 .list{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;overflow:hidden}.row{padding:8px 6px;border-color:var(--bd)}
 .bar input[type=search]{border-radius:999px}
 }
+
+/* Text-only wordmark matching PANEL */
+.logo,.mobile-brand{gap:0}.brand-dot{color:var(--ac);font-weight:inherit}
