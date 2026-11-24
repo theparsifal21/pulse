@@ -94,7 +94,7 @@ import:()=>$('#fi').click(),
 play(el){const g=S.groups[+el.dataset.g];if(g)playList(g,g.indexOf(el.dataset.id))},
 playall(el){const g=S.groups[+el.dataset.g];if(g&&g.length)playList(g,0,!!el.dataset.shuf)},
 like:el=>like(el.dataset.id),
-navmore(){menu(`<div class="mn"><h2>Explore PULSE</h2>${nav.filter(([k])=>!['home','library','playlists'].includes(k)).map(([k,l])=>`<a href="#/${k}">${l}</a>`).join('')}<button data-a="import">Import music</button></div>`)},
+navmore(){menu(`<div class="mn"><h2>Explore PULSE</h2>${nav.filter(([k])=>!['home','library','playlists','settings'].includes(k)).map(([k,l])=>`<a href="#/${k}">${l}</a>`).join('')}<button data-a="import">Import music</button></div>`)},
 more(el){const id=el.dataset.id,p=el.dataset.p;menu(`<div class="mn"><button data-a="qnext" data-id="${id}">Play next</button><button data-a="qadd" data-id="${id}">Add to queue</button><button data-a="add" data-id="${id}">Add to playlist…</button><button data-a="edit" data-id="${id}">Edit info…</button>${p?`<button data-a="unpl" data-id="${id}" data-p="${p}">Remove from this playlist</button>`:''}<button data-a="rm" data-id="${id}">Delete from library…</button></div>`)},
 qnext(el){if(S.i<0)return playList([el.dataset.id]);Object.assign(S,insertNext(S,el.dataset.id));saveQ();toast('Playing next');if(isQ())render()},
 qadd(el){if(S.i<0)return playList([el.dataset.id]);Object.assign(S,addToQueue(S,el.dataset.id));saveQ();toast('Added to queue');if(isQ())render()},
@@ -172,11 +172,11 @@ function navIcon(k){
 }
 function mobileNav(key){
  const page=parent[key]||key;
- return nav.map(([k,l])=>`<a href="#/${k}" data-page="${k}" class="${k===page?'act':''}" ${k===page?'aria-current="page"':''}><span class="navicon">${navIcon(k)}</span><span>${l}</span></a>`).join('')+'<button data-a="import">＋ Import</button>'+`<button class="mobile-more ${!['home','library','playlists'].includes(page)?'act':''}" data-a="navmore"><span class="navicon">${navIcon('more')}</span><span>More</span></button>`;
+ return nav.map(([k,l])=>`<a href="#/${k}" data-page="${k}" class="${k===page?'act':''}" ${k===page?'aria-current="page"':''}><span class="navicon">${navIcon(k)}</span><span>${l}</span></a>`).join('')+'<button data-a="import">＋ Import</button>'+`<button class="mobile-more ${!['home','library','playlists','settings'].includes(page)?'act':''}" data-a="navmore"><span class="navicon">${navIcon('more')}</span><span>More</span></button>`;
 }
 function mobileShell(key,html){
  const back=parent[key];
- const head=`<header class="mobile-head">${back?`<a class="mobile-icon" href="#/${back}" aria-label="Back">${navIcon('back')}</a>`:'<a class="mobile-brand" href="#/home"><img src="logo.svg" alt="" width="28" height="28">PULSE</a>'}<div class="mobile-head-actions"><a class="mobile-icon" href="#/library" aria-label="Search library">${navIcon('search')}</a><a class="mobile-icon" href="#/settings" aria-label="Settings">${navIcon('settings')}</a></div></header>`;
+ const head=`<header class="mobile-head">${back?`<a class="mobile-icon" href="#/${back}" aria-label="Back">${navIcon('back')}</a>`:'<a class="mobile-brand" href="#/home"><img src="logo.svg" alt="" width="28" height="28">PULSE</a>'}<div class="mobile-head-actions"><a class="mobile-icon" href="#/library" aria-label="Search library">${navIcon('search')}</a></div></header>`;
  const tabs=['library','albums','artists','liked','history','playlists'].includes(key)?`<nav class="page-tabs" aria-label="Collection">${[['library','Tracks'],['albums','Albums'],['artists','Artists'],['playlists','Playlists'],['liked','Liked'],['history','Recent']].map(([id,l])=>`<a href="#/${id}" class="${id===key?'selected':''}" ${id===key?'aria-current="page"':''}>${l}</a>`).join('')}</nav>`:'';
  const quick=key==='home'?'<div class="mobile-quick"><a href="#/library"><b>♫</b>All tracks</a><a href="#/liked"><b>♥</b>Liked songs</a><a href="#/albums"><b>▣</b>Albums</a><a href="#/history"><b>◷</b>Recent</a></div>':'';
  return head+tabs+quick+html;
