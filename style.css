@@ -50,3 +50,103 @@ dialog{background:var(--bg2);color:var(--tx);border:1px solid var(--bd);border-r
 .row{padding:9px 6px;gap:4px}.row button{min-height:40px;padding:6px}.row .m b{font-size:13px}.row .m span{font-size:11px}.toast,#prog{bottom:calc(var(--mobile-nav) + 140px);max-width:90vw}
 dialog{max-height:75dvh;overflow:auto;border-radius:20px}.mn a,.mn button{min-height:44px}
 }
+
+/* v0.5 mobile-first shell */
+.mobile-head,.page-tabs,.mobile-quick,.now-top,.now-extra{display:none}
+#playeropen{display:flex;text-align:left;padding:0;border-radius:5px;min-width:0}
+#playeropen:hover{background:transparent}
+#cv{cursor:pointer;background-position:center;background-size:cover}
+.empty-icon{font-size:36px;color:var(--ac2);margin-bottom:10px}
+.sheet-close{display:block;margin:0 0 8px auto;color:var(--tx2)}
+#player.expanded{position:fixed;inset:0;z-index:8;height:100dvh;width:100%;border:0;border-radius:0;background:linear-gradient(160deg,#38304f,#17151e 52%,#101014);display:flex;flex-direction:column;align-items:stretch;gap:18px;padding:max(18px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));overflow-y:auto;overscroll-behavior:contain}
+#player.expanded>*{width:min(100%,480px);margin-left:auto;margin-right:auto;flex-shrink:0}
+#player.expanded .now-top{display:flex;align-items:center;justify-content:space-between;font-size:12px;letter-spacing:1.5px;font-weight:700;color:#ded9ef}
+.now-top button,.now-top a{color:inherit;text-decoration:none;font-size:26px;width:44px;height:44px;display:grid;place-items:center;padding:0}
+#player.expanded .np{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:16px;align-items:center}
+#player.expanded #cv{grid-column:1/-1;width:min(100%,400px,42dvh);height:auto;aspect-ratio:1;margin:0 auto 6px;border-radius:18px;font-size:84px;box-shadow:0 16px 40px #0005}
+#player.expanded #tt{font-size:22px;white-space:normal;overflow-wrap:anywhere}
+#player.expanded #ta{font-size:15px}
+#player.expanded #lk{display:block;font-size:24px;min-height:44px}
+#player.expanded .ctl{display:flex;flex-direction:column;align-items:stretch;gap:12px}
+#player.expanded .seek{order:-1;width:100%;max-width:none;font-size:12px}
+#player.expanded .seek input{min-width:0;height:28px;margin:0}
+#player.expanded .btns{justify-content:space-between;gap:4px}
+#player.expanded .btns button{display:grid;place-items:center;min-width:44px;min-height:44px;font-size:23px}
+#player.expanded .btns .big{width:64px;height:64px;font-size:25px}
+#player.expanded .vol{display:flex;justify-content:center;gap:12px}
+#player.expanded .vol input{width:min(65%,250px)}
+#player.expanded .now-extra{display:flex;justify-content:space-between;align-items:center;color:var(--tx2);font-size:13px}
+.now-extra a{color:inherit;text-decoration:none;padding:10px}
+@media(max-width:760px){
+body{height:100dvh;padding-bottom:var(--mobile-nav);font-size:15px}
+#app{display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
+#main{flex:1;min-height:0;min-width:0;padding:12px 16px 24px;background:radial-gradient(ellipse at 10% 0,#312742 0,transparent 50%),var(--bg)}
+#main h1{font-size:27px;margin:8px 0 6px;line-height:1.18}
+#main h2{font-size:20px;letter-spacing:-.3px;margin:24px 0 12px}
+.mobile-head{display:flex;justify-content:space-between;align-items:center;margin:0 0 16px;min-height:44px}
+.mobile-brand{display:flex;align-items:center;gap:9px;font-size:19px;font-weight:800;letter-spacing:.14em;color:var(--tx);text-decoration:none}
+.mobile-head-actions{display:flex;gap:6px}
+.mobile-icon{width:44px;height:44px;border-radius:50%;background:#ffffff0b;color:var(--tx);display:grid;place-items:center}
+.mobile-icon svg,.navicon svg{width:23px;height:23px;display:block}
+#nav .navicon{padding:0;display:grid!important;place-items:center;width:52px;height:30px}
+#nav .act{margin:0}#nav .act .navicon{padding:0;background:#38314e}
+#nav a,#nav button{min-height:44px;font-size:11px}
+.page-tabs{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;margin:0 -16px 18px;padding:0 16px}
+.page-tabs a{width:auto;flex:none;padding:9px 14px;border-radius:99px;background:#292630;color:var(--tx2);font-size:13px;white-space:nowrap}
+.page-tabs a.selected{background:var(--ac);color:#151221;font-weight:700}
+.mobile-quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:22px}
+.mobile-quick a{display:flex;align-items:center;gap:10px;min-height:52px;border-radius:11px;background:#ffffff0b;text-decoration:none;color:var(--tx);font-weight:600;font-size:13px;overflow:hidden}
+.mobile-quick b{display:grid;place-items:center;flex:none;width:50px;height:52px;background:linear-gradient(135deg,#514272,#29253a);font-size:24px;color:#ded1ff}
+#main .empty{padding:28px 16px;border-radius:20px}
+#main .empty p{font-size:14px}
+#player:not(.expanded){position:relative;inset:auto;flex:none;width:auto;margin:0 8px 7px;height:auto;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2px 4px;padding:7px 8px 3px}
+#player:not(.expanded) .np{min-width:0;gap:9px}
+#player:not(.expanded) #cv{width:42px;height:42px}
+#player:not(.expanded) #lk,#player:not(.expanded) #sh,#player:not(.expanded) #pv,#player:not(.expanded) #rp{display:none}
+#player:not(.expanded) .ctl{display:contents}
+#player:not(.expanded) .btns{gap:2px;justify-content:flex-end}
+#player:not(.expanded) .btns button{min-width:44px;min-height:44px}
+#player:not(.expanded) .btns .big{width:40px;height:40px;min-width:40px;min-height:40px}
+#player:not(.expanded) .seek{grid-column:1/-1;gap:6px;min-width:0}
+#player:not(.expanded) .seek input{height:12px}
+#player:not(.expanded) .seek span{font-size:9px}
+#player.expanded{gap:14px}
+#player.expanded .btns .big{min-width:64px;min-height:64px}
+.bar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.bar input[type=search]{grid-column:1/-1;width:100%;min-width:0;padding:12px;font-size:16px;border-radius:12px}
+.bar button,.bar select{min-height:44px;font-size:13px;overflow-wrap:anywhere}
+.bar select{grid-column:1/-1;min-width:0}
+#main[data-page=settings] .bar{grid-template-columns:1fr}
+#main[data-page=settings] .bar button{text-align:left;padding:14px 16px}
+#main[data-page=settings] .stat{background:var(--bg2);border-radius:12px;padding:16px}
+#main[data-page=settings] .sub{line-height:1.6}
+.grid{gap:16px 12px}.grid .card{min-width:0}.card b{font-size:14px}.card span{font-size:12px}
+.shelf{margin-right:-16px;padding-right:16px;scroll-snap-type:x proximity}.shelf .card{width:140px;scroll-snap-align:start}
+.cv{border-radius:12px;background-color:#2c2836}.cv.sm{width:40px;border-radius:8px}
+.head{flex-direction:column;align-items:center;text-align:center;margin:12px 0 18px;gap:16px}
+.head .cv.lg{width:min(60vw,230px);font-size:64px}
+.head h1{font-size:26px!important}
+.hero{padding:14px;border-radius:16px;background:linear-gradient(135deg,#37304c,#201d29)}
+.hero .cv.lg{width:100px}
+.list{border:0;background:transparent;overflow:visible}
+.row{min-height:60px;border-bottom:1px solid #ffffff09;padding:6px 0;gap:3px}
+.row button{flex:none;min-width:36px;min-height:44px;padding:4px;font-size:16px}
+.row button[data-a=play]{min-width:30px}
+.row .m{padding:0 4px}
+.row .m b{font-size:14px}.row .m span{font-size:12px}
+.row:has(button[data-a=mv]){display:grid;grid-template-columns:30px 40px minmax(0,1fr) 36px 36px}
+.row:has(button[data-a=mv]) .m{grid-column:3;grid-row:1}
+.row:has(button[data-a=mv]) button[data-a=like]{grid-column:4;grid-row:1}
+.row:has(button[data-a=mv]) button[data-a=more]{grid-column:5;grid-row:1}
+.row button[data-a=mv]{grid-row:2;grid-column:4}
+.row button[data-a=mv][data-d="1"]{grid-column:5}
+dialog{width:min(92vw,440px);max-height:80dvh;padding:18px;border-radius:20px}
+dialog input,dialog textarea,dialog select{font-size:16px;min-height:44px}
+dialog button{min-height:44px}
+dialog.sheet{position:fixed;inset:auto 0 0;margin:0;width:100%;max-width:none;max-height:80dvh;border-radius:24px 24px 0 0;padding:12px 20px max(20px,env(safe-area-inset-bottom));overflow:auto}
+dialog.sheet .mn{min-width:0}
+dialog.sheet .mn a,dialog.sheet .mn button{font-size:16px;min-height:48px;padding:13px 8px}
+.toast,#prog{z-index:10;bottom:calc(var(--mobile-nav) + 84px)}
+body.player-open .toast{bottom:24px}
+}
+@media(max-width:340px){#main{padding-left:12px;padding-right:12px}.row .cv.sm{width:32px}.row button{min-width:30px}.mobile-quick a{gap:6px;font-size:12px}.mobile-quick b{width:40px}#player.expanded .btns .big{min-width:54px;min-height:54px;width:54px;height:54px}}
