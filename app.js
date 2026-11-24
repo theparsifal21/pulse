@@ -80,6 +80,7 @@ import:()=>$('#fi').click(),
 play(el){const g=S.groups[+el.dataset.g];if(g)playList(g,g.indexOf(el.dataset.id))},
 playall(el){const g=S.groups[+el.dataset.g];if(g&&g.length)playList(g,0,!!el.dataset.shuf)},
 like:el=>like(el.dataset.id),
+navmore(){menu(`<div class="mn"><h2>Explore PULSE</h2>${nav.filter(([k])=>!['home','library','playlists'].includes(k)).map(([k,l])=>`<a href="#/${k}">${l}</a>`).join('')}<button data-a="import">Import music</button></div>`)},
 more(el){const id=el.dataset.id,p=el.dataset.p;menu(`<div class="mn"><button data-a="qnext" data-id="${id}">Play next</button><button data-a="qadd" data-id="${id}">Add to queue</button><button data-a="add" data-id="${id}">Add to playlist…</button><button data-a="edit" data-id="${id}">Edit info…</button>${p?`<button data-a="unpl" data-id="${id}" data-p="${p}">Remove from this playlist</button>`:''}<button data-a="rm" data-id="${id}">Delete from library…</button></div>`)},
 qnext(el){if(S.i<0)return playList([el.dataset.id]);Object.assign(S,insertNext(S,el.dataset.id));saveQ();toast('Playing next');if(isQ())render()},
 qadd(el){if(S.i<0)return playList([el.dataset.id]);Object.assign(S,addToQueue(S,el.dataset.id));saveQ();toast('Added to queue');if(isQ())render()},
@@ -154,7 +155,7 @@ settings(){return`<h1>Settings</h1><h2>Storage</h2><p class="stat" id="stor">Cal
 const nav=[['home','Home'],['library','Library'],['albums','Albums'],['artists','Artists'],['playlists','Playlists'],['liked','Liked'],['history','Recent'],['queue','Queue'],['settings','Settings']],parent={album:'albums',artist:'artists',playlist:'playlists'};
 async function render(){const rt=++S.rt,[v,ra]=(location.hash.slice(2)||'home').split('/'),key=Object.hasOwn(views,v)?v:'home';let html;
  try{if(key==='home')S.hist=await all('history').catch(()=>[]);if(rt!==S.rt)return;S.groups=[];html=views[key](ra?decodeURIComponent(ra):'')}catch(e){html=`<div class="empty">Could not display this page: ${esc(e.message)}</div>`}
- $('#nav').innerHTML=nav.map(([k,l])=>`<a href="#/${k}" class="${k==(parent[key]||key)?'act':''}">${l}</a>`).join('')+'<button data-a="import">＋ Import</button>';
+ $('#nav').innerHTML=nav.map(([k,l])=>`<a href="#/${k}" data-page="${k}" class="${k==(parent[key]||key)?'act':''}"><span class="navicon" aria-hidden="true">${({home:'⌂',library:'♫',playlists:'☷'})[k]||''}</span><span>${l}</span></a>`).join('')+'<button data-a="import">＋ Import</button><button class="mobile-more '+(!['home','library','playlists'].includes(parent[key]||key)?'act':'')+'" data-a="navmore"><span class="navicon" aria-hidden="true">•••</span><span>More</span></button>';
  $('#pls').innerHTML=S.pls.map(p=>`<a href="#/playlist/${p.id}" class="${ra==p.id?'act':''}">${esc(p.name)}</a>`).join('');
  $('#main').innerHTML=html;
  if(key==='library'){const draw=()=>{sessionStorage.q=$('#q').value;sessionStorage.s=$('#s').value;const q=$('#q').value.toLowerCase();S.groups=[];const ts=S.tracks.filter(t=>[t.title,t.artist,t.album].join(' ').toLowerCase().includes(q)).sort(sorts[$('#s').value]);$('#lst').innerHTML=ts.length?list(ts):empty(S.tracks.length?'No tracks match your search.':'Your library is empty.',!S.tracks.length);hydrate($('#lst'))};$('#q').oninput=draw;$('#s').onchange=draw;$('#imf').onclick=()=>$('#fd').click();draw()}
