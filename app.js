@@ -176,7 +176,7 @@ function mobileNav(key){
 }
 function mobileShell(key,html){
  const back=parent[key];
- const head=`<header class="mobile-head">${back?`<a class="mobile-icon" href="#/${back}" aria-label="Back">${navIcon('back')}</a>`:'<a class="mobile-brand" href="#/home"><img src="logo.svg" alt="" width="28" height="28">PULSE</a>'}<div class="mobile-head-actions"><a class="mobile-icon" href="#/library" aria-label="Search library">${navIcon('search')}</a></div></header>`;
+ const head=`<header class="mobile-head">${back?`<a class="mobile-icon" href="#/${back}" aria-label="Back">${navIcon('back')}</a>`:'<a class="mobile-brand" href="#/home">PULSE<span class="brand-dot">.</span></a>'}<div class="mobile-head-actions"><a class="mobile-icon" href="#/library" aria-label="Search library">${navIcon('search')}</a></div></header>`;
  const tabs=['library','albums','artists','liked','history','playlists'].includes(key)?`<nav class="page-tabs" aria-label="Collection">${[['library','Tracks'],['albums','Albums'],['artists','Artists'],['playlists','Playlists'],['liked','Liked'],['history','Recent']].map(([id,l])=>`<a href="#/${id}" class="${id===key?'selected':''}" ${id===key?'aria-current="page"':''}>${l}</a>`).join('')}</nav>`:'';
  const quick=key==='home'?'<div class="mobile-quick"><a href="#/library"><b>♫</b>All tracks</a><a href="#/liked"><b>♥</b>Liked songs</a><a href="#/albums"><b>▣</b>Albums</a><a href="#/history"><b>◷</b>Recent</a></div>':'';
  return head+tabs+quick+html;
