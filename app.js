@@ -20,7 +20,7 @@ const hydrate=(r=document)=>r.querySelectorAll('[data-cov]').forEach(async el=>{
 const cov=(id,c='')=>`<div class="cv ${c}"${id?` data-cov="${esc(id)}"`:''}>♪</div>`;
 /* ---- dialogs ---- */
 function dlg(html,onok){const d=document.createElement('dialog');d.innerHTML=`<form method="dialog">${html}<div class="act"><button value="x">Cancel</button><button value="ok" class="pri">OK</button></div></form>`;document.body.append(d);d.onclose=async()=>{const ok=d.returnValue==='ok',f=d.querySelector('form');d.remove();if(ok)try{await onok(f)}catch(e){toast('Error: '+(e.message||e))}};d.showModal()}
-function menu(html){const d=document.createElement('dialog');d.innerHTML=html;document.body.append(d);d.onclick=e=>{if(e.target===d||e.target.closest('[data-a],a'))d.close()};d.onclose=()=>d.remove();d.showModal()}
+function menu(html){const d=document.createElement('dialog');d.className="sheet";d.innerHTML='<button class="sheet-close" aria-label="Close menu">Close</button>'+html;document.body.append(d);d.onclick=e=>{if(e.target===d||e.target.closest('[data-a],a,.sheet-close'))d.close()};d.onclose=()=>d.remove();d.showModal()}
 /* ---- import ---- */
 const dur=f=>new Promise(r=>{const u=URL.createObjectURL(f),x=new Audio();const end=v=>{clearTimeout(tm);x.removeAttribute('src');URL.revokeObjectURL(u);r(v)};const tm=setTimeout(()=>end(null),8000);x.preload='metadata';x.onloadedmetadata=()=>end(isFinite(x.duration)?x.duration:null);x.onerror=()=>end(null);x.src=u});
 async function imp(files){files=[...files];let ok=0,dup=0;const bad=[];
@@ -65,7 +65,21 @@ a.ontimeupdate=()=>{const d=a.currentTime-S.last;if(d>0&&d<2&&!a.paused)S.listen
 sk.oninput=()=>{sk.dragging=true};sk.onchange=()=>{if(a.duration)a.currentTime=sk.value/1000*a.duration;sk.dragging=false};
 $('#vl').oninput=e=>{a.volume=+e.target.value;a.muted=false;localStorage['pulse.vol']=e.target.value;ui()};$('#mu').onclick=()=>{a.muted=!a.muted;ui()};
 $('#pp').onclick=toggle;$('#nx').onclick=()=>next(false);$('#pv').onclick=prev;$('#sh').onclick=setShuffle;$('#rp').onclick=()=>{S.repeat=(S.repeat+1)%3;saveQ();ui()};$('#lk').onclick=()=>S.cur&&like(S.cur.id);
-function ui(){const t=S.cur,cv=$('#cv');$('#tt').textContent=t?t.title:'Nothing playing';$('#ta').textContent=t?(t.artist||'Unknown artist'):'Import music to start';$('#pp').textContent=a.paused?'▶':'⏸';
+function installNowPlaying(){
+ const p=$('#player'), title=p.querySelector('.np .m');
+ const button=document.createElement('button');button.id='playeropen';button.className='m';button.setAttribute('aria-label','Open Now Playing');button.innerHTML=title.innerHTML;title.replaceWith(button);
+ p.insertAdjacentHTML('afterbegin','<div class="now-top"><button id="playerclose" aria-label="Close Now Playing">⌄</button><span>NOW PLAYING</span><a href="#/queue" id="nowqueue" aria-label="Open queue">☷</a></div>');
+ p.insertAdjacentHTML('beforeend','<div class="now-extra"><button data-a="import">＋ Import music</button><a href="#/queue" id="nowqueue2">View queue</a></div>');
+ function open(value){p.classList.toggle('expanded',value);$('#app').inert=value;document.body.classList.toggle('player-open',value);(value?$('#playerclose'):button).focus()}
+ button.onclick=()=>{if(!p.classList.contains('expanded'))open(true)};
+ $('#cv').onclick=()=>{if(!p.classList.contains('expanded'))open(true)};
+ $('#playerclose').onclick=()=>open(false);
+ for(const id of ['#nowqueue','#nowqueue2'])$(id).onclick=()=>open(false);
+ addEventListener('keydown',e=>{if(e.key==='Escape'&&p.classList.contains('expanded')&&!document.querySelector('dialog[open]'))open(false)});
+ addEventListener('hashchange',()=>{if(p.classList.contains('expanded'))open(false)});
+}
+installNowPlaying();
+function ui(){const t=S.cur,cv=$('#cv');$('#tt').textContent=t?t.title:'Nothing playing';$('#ta').textContent=t?(t.artist||'Unknown artist'):'Import music to start';$('#pp').textContent=a.paused?'▶':'⏸';$('#pp').setAttribute('aria-label',a.paused?'Play':'Pause');$('#lk').setAttribute('aria-pressed',String(!!t?.favorite));$('#sh').setAttribute('aria-pressed',String(S.shuffle));
 if(cv.dataset.cur!==(t?.id||'')){cv.dataset.cur=t?.id||'';cv.style.backgroundImage='';cv.textContent='♪';if(t?.coverId){cv.dataset.cov=t.coverId;hydrate($('.np'))}else delete cv.dataset.cov}
 $('#lk').classList.toggle('on',!!t?.favorite);$('#sh').classList.toggle('on',S.shuffle);$('#rp').classList.toggle('on',S.repeat>0);$('#rp').textContent=S.repeat==2?'↻1':'↻';$('#mu').textContent=a.muted||!a.volume?'🔇':'🔊'}
 async function media(){if(!('mediaSession'in navigator)||!S.cur)return;const t=S.cur,u=await covUrl(t.coverId);if(t!==S.cur)return;navigator.mediaSession.metadata=new MediaMetadata({title:t.title,artist:t.artist||'',album:t.album||'',artwork:u?[{src:u}]:[{src:new URL('icon-512.png',location.href).href,sizes:'512x512',type:'image/png'}]})}
@@ -117,7 +131,7 @@ dlg(`<p>Replace your library metadata, playlists and history with this backup ($
 const grp=ids=>S.groups.push(ids)-1;
 const row=(t,g,pl,k)=>`<div class="row${S.cur?.id===t.id?' cur':''}"><button data-a="play" data-g="${g}" data-id="${t.id}" aria-label="Play ${esc(t.title)}">▶</button>${cov(t.coverId,'sm')}<div class="m"><b>${esc(t.title)}</b><span>${esc(t.artist||'Unknown artist')}${t.album?' · '+esc(t.album):''}</span></div><span class="d">${fmt(t.duration)}</span><button data-a="like" data-id="${t.id}" class="${t.favorite?'on':''}" aria-label="Like">♥</button>${pl?`<button data-a="mv" data-p="${pl}" data-i="${k}" data-d="-1" aria-label="Move up">↑</button><button data-a="mv" data-p="${pl}" data-i="${k}" data-d="1" aria-label="Move down">↓</button>`:''}<button data-a="more" data-id="${t.id}" ${pl?`data-p="${pl}"`:''} aria-label="More actions">⋯</button></div>`;
 const list=(ts,pl)=>{if(!ts.length)return'';const g=grp(ts.map(t=>t.id));return`<div class="list">${ts.map((t,k)=>row(t,g,pl,k)).join('')}</div>`};
-const empty=(m,btn=1)=>`<div class="empty"><p>${m}</p>${btn?'<button class="pri" data-a="import">Import music</button>':''}</div>`;
+const empty=(m,btn=1)=>`<div class="empty"><div class="empty-icon" aria-hidden="true">♫</div><p>${m}</p>${btn?'<button class="pri" data-a="import">Import music</button>':''}</div>`;
 const card=(href,c,t1,t2)=>`<a class="card" href="${href}">${cov(c)}<b>${esc(t1)}</b><span>${esc(t2)}</span></a>`;
 const shelf=(h,cs)=>cs?`<h2>${h}</h2><div class="shelf">${cs}</div>`:'';
 const groupBy=(ts,kf)=>{const m=new Map();for(const t of ts){const k=kf(t);if(!k)continue;(m.get(k)||m.set(k,[]).get(k)).push(t)}return m};
@@ -153,11 +167,25 @@ queue(){if(!S.q.length)return`<h1>Queue</h1>`+empty('The queue is empty. Play a 
  return`<h1>Queue</h1><div class="bar"><button data-a="qsave">Save as playlist</button><button data-a="qclear">Clear upcoming</button></div><div class="list">${S.q.map((id,i)=>{const t=tr(id);return t?`<div class="row${i===S.i?' cur':''}"><button data-a="qjump" data-i="${i}" aria-label="Play">▶</button><div class="m"><b>${esc(t.title)}</b><span>${i<S.i?'Played':i===S.i?'Now playing':'Next'} · ${esc(t.artist||'Unknown artist')}</span></div>${i!==S.i?`<button data-a="qrm" data-i="${i}" aria-label="Remove from queue">✕</button>`:''}</div>`:''}).join('')}</div>`},
 settings(){return`<h1>Settings</h1><h2>Storage</h2><p class="stat" id="stor">Calculating…</p><div class="bar"><button data-a="persist">Request persistent storage</button></div><p class="sub">Browsers can evict site data. Export backups regularly – they contain metadata, playlists and history, but not audio files.</p><h2>Backup</h2><div class="bar"><button data-a="export">Export backup</button><button data-a="importbk">Restore backup…</button><button data-a="clrhist">Clear listening history</button></div>`}};
 const nav=[['home','Home'],['library','Library'],['albums','Albums'],['artists','Artists'],['playlists','Playlists'],['liked','Liked'],['history','Recent'],['queue','Queue'],['settings','Settings']],parent={album:'albums',artist:'artists',playlist:'playlists'};
+function navIcon(k){
+ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+({home:'<path d="M3 10 12 3l9 7v10h-6v-6H9v6H3z"/>',library:'<path d="M4 4v16M9 4v16M14 4l6 15"/>',playlists:'<path d="M3 5h14M3 10h14M3 15h8M19 10v9"/><circle cx="16" cy="19" r="3"/>',more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',search:'<circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/>',settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/>',back:'<path d="m15 5-7 7 7 7"/>'}[k]||'')+'</svg>'
+}
+function mobileNav(key){
+ const page=parent[key]||key;
+ return nav.map(([k,l])=>`<a href="#/${k}" data-page="${k}" class="${k===page?'act':''}" ${k===page?'aria-current="page"':''}><span class="navicon">${navIcon(k)}</span><span>${l}</span></a>`).join('')+'<button data-a="import">＋ Import</button>'+`<button class="mobile-more ${!['home','library','playlists'].includes(page)?'act':''}" data-a="navmore"><span class="navicon">${navIcon('more')}</span><span>More</span></button>`;
+}
+function mobileShell(key,html){
+ const back=parent[key];
+ const head=`<header class="mobile-head">${back?`<a class="mobile-icon" href="#/${back}" aria-label="Back">${navIcon('back')}</a>`:'<a class="mobile-brand" href="#/home"><img src="logo.svg" alt="" width="28" height="28">PULSE</a>'}<div class="mobile-head-actions"><a class="mobile-icon" href="#/library" aria-label="Search library">${navIcon('search')}</a><a class="mobile-icon" href="#/settings" aria-label="Settings">${navIcon('settings')}</a></div></header>`;
+ const tabs=['library','albums','artists','liked','history','playlists'].includes(key)?`<nav class="page-tabs" aria-label="Collection">${[['library','Tracks'],['albums','Albums'],['artists','Artists'],['playlists','Playlists'],['liked','Liked'],['history','Recent']].map(([id,l])=>`<a href="#/${id}" class="${id===key?'selected':''}" ${id===key?'aria-current="page"':''}>${l}</a>`).join('')}</nav>`:'';
+ const quick=key==='home'?'<div class="mobile-quick"><a href="#/library"><b>♫</b>All tracks</a><a href="#/liked"><b>♥</b>Liked songs</a><a href="#/albums"><b>▣</b>Albums</a><a href="#/history"><b>◷</b>Recent</a></div>':'';
+ return head+tabs+quick+html;
+}
 async function render(){const rt=++S.rt,[v,ra]=(location.hash.slice(2)||'home').split('/'),key=Object.hasOwn(views,v)?v:'home';let html;
  try{if(key==='home')S.hist=await all('history').catch(()=>[]);if(rt!==S.rt)return;S.groups=[];html=views[key](ra?decodeURIComponent(ra):'')}catch(e){html=`<div class="empty">Could not display this page: ${esc(e.message)}</div>`}
- $('#nav').innerHTML=nav.map(([k,l])=>`<a href="#/${k}" data-page="${k}" class="${k==(parent[key]||key)?'act':''}"><span class="navicon" aria-hidden="true">${({home:'⌂',library:'♫',playlists:'☷'})[k]||''}</span><span>${l}</span></a>`).join('')+'<button data-a="import">＋ Import</button><button class="mobile-more '+(!['home','library','playlists'].includes(parent[key]||key)?'act':'')+'" data-a="navmore"><span class="navicon" aria-hidden="true">•••</span><span>More</span></button>';
+ $('#nav').innerHTML=mobileNav(key);
  $('#pls').innerHTML=S.pls.map(p=>`<a href="#/playlist/${p.id}" class="${ra==p.id?'act':''}">${esc(p.name)}</a>`).join('');
- $('#main').innerHTML=html;
+ const main=$('#main');const page=location.hash||'#/home';const moved=main.dataset.route!==page;main.dataset.route=page;main.dataset.page=key;main.innerHTML=mobileShell(key,html);if(moved)main.scrollTop=0;
  if(key==='library'){const draw=()=>{sessionStorage.q=$('#q').value;sessionStorage.s=$('#s').value;const q=$('#q').value.toLowerCase();S.groups=[];const ts=S.tracks.filter(t=>[t.title,t.artist,t.album].join(' ').toLowerCase().includes(q)).sort(sorts[$('#s').value]);$('#lst').innerHTML=ts.length?list(ts):empty(S.tracks.length?'No tracks match your search.':'Your library is empty.',!S.tracks.length);hydrate($('#lst'))};$('#q').oninput=draw;$('#s').onchange=draw;$('#imf').onclick=()=>$('#fd').click();draw()}
  if(key==='settings'){navigator.storage?.estimate?.().then(s=>{const m=n=>(n/1048576).toFixed(1)+' MB',e=$('#stor');if(e)e.textContent=`${m(s.usage)} used of ${m(s.quota)} (${(s.usage/s.quota*100).toFixed(1)}%)`+(s.usage/s.quota>.8?' – almost full!':'')});
  }
