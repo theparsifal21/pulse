@@ -1,4 +1,13 @@
-# PULSE changelog – v0.2
+# PULSE changelog
+
+## v0.6 — Spotify integration
+- Save Spotify track, album, playlist, episode and show links locally.
+- Official embedded player, external search and open-in-Spotify links.
+- No credentials required; playback depends on Spotify and internet access.
+- Preserve local library and screenshot scanner; update PWA cache.
+- Browser testing pending.
+
+## v0.2
 
 ## Bugs fixed (audit items)
 1. **Empty playlist buttons** – Play/Shuffle are only rendered when the playlist has playable tracks; `playall` also guards empty groups.
