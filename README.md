@@ -1,10 +1,16 @@
-# PULSE — Mobile First v0.5
+# PULSE — v0.6 Spotify integration
 
 **Listen. Collect. Discover.**
 
 PULSE is a free, standalone, local-first personal music player for mobile and desktop. It runs entirely in your browser and does not require NEXUS, an account, a backend, API keys or a build step.
 
 [**Open PULSE**](https://theparsifal21.github.io/pulse/)
+
+## Spotify integration (v0.6)
+
+Open Spotify from Home, Liked Songs, or the navigation menu. Copy a track, album, playlist, show or episode link from Spotify and add it to PULSE. Give it an optional display name, then open the official embedded player or the Spotify app/site. Search opens Spotify's own search page. No API key or Premium subscription is required to save links. Playback availability and previews are controlled by Spotify; full playback is not guaranteed. Saved links are stored separately on this device, are not included in metadata backups, and require internet for playback. No account synchronization or audio downloads are provided.
+
+The existing screenshot scanner and local audio library are retained.
 
 ## Features
 
@@ -72,7 +78,7 @@ All project files are in the repository root.
 
 Music files, artwork, playlists, track metadata and listening history are stored locally using IndexedDB. Playback preferences also use browser storage.
 
-- No cloud synchronization or online streaming provider is included.
+- No cloud synchronization is included. Spotify links use official online embeds, not native streaming.
 - Backups contain metadata, playlists, history and volume settings, **not audio files or artwork**.
 - Keep your original music files separately.
 - Clearing site data, browser storage eviction or changing devices may remove access to your library.
@@ -89,7 +95,14 @@ node test.js
 
 The v0.5 JavaScript syntax was checked. Real-device mobile rendering and live deployment have not yet been fully verified. Audio codec support varies by browser.
 
-## Latest release — v0.5
+## Latest release — v0.6
+
+- Spotify link library with duplicate prevention, removal, official embeds and external search.
+- Home and Liked Songs shortcuts; existing local player and screenshot scanner retained.
+- Updated service worker cache and visible version in Settings.
+- Browser playback and deployment have not yet been verified.
+
+## Previous release — v0.5
 
 - Mobile-first interface across the application.
 - Compact mini-player and full-screen Now Playing.
