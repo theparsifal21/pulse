@@ -156,7 +156,36 @@ if(!found.length)return toast('No songs detected. Try a clear Spotify list scree
 dlg('<h2>Review detected songs</h2><p class="sub">Correct any OCR mistakes. One song per line: title | artist. Remove unwanted lines before saving.</p><textarea name="songs" rows="12" style="width:100%;min-height:180px">'+esc(found.map(x=>x.join(' | ')).join('\n'))+'</textarea>',async f=>{const key=x=>x.map(s=>s.normalize('NFC').trim().toLocaleLowerCase()).join('\u0000');const seen=new Set(importedOnlineSongs.map(key));let n=0;for(const line of f.songs.value.split(/\n/)){const i=line.lastIndexOf('|');if(i<0)continue;const x=[line.slice(0,i).trim(),line.slice(i+1).trim()];if(!x[0]||!x[1]||seen.has(key(x)))continue;seen.add(key(x));importedOnlineSongs.push(x);n++}saveOnline();toast('Added '+n+' online songs');render()})}
 act.scanmusic=()=>{const input=$('#songshots');input.onchange=()=>{const files=[...input.files];input.value='';scanMusic(files)};input.click()};
 act.removeonline=el=>{importedOnlineSongs.splice(Number(el.dataset.i),1);saveOnline();render()};
+
+/* Spotify link library: no account credentials or Web API required. */
+function spotifyLink(value){
+ const v=String(value||'').trim();
+ let m=/^spotify:(track|album|playlist|episode|show):([A-Za-z0-9]{22})$/.exec(v);
+ if(m)return {type:m[1],id:m[2]};
+ try{const u=new URL(v);if(u.protocol!=='https:'||u.hostname!=='open.spotify.com'||u.port||u.username||u.password)return null;
+ m=/^\/(?:intl-[a-z-]+\/)?(?:embed\/)?(track|album|playlist|episode|show)\/([A-Za-z0-9]{22})\/?$/i.exec(u.pathname);
+ return m?{type:m[1].toLowerCase(),id:m[2]}:null}catch{return null}
+}
+const spotifyKey='pulse.spotify.links.v1';
+let spotifyItems=[];try{const saved=JSON.parse(localStorage.getItem(spotifyKey)||'[]');if(Array.isArray(saved))spotifyItems=saved.filter(x=>x&&spotifyLink('spotify:'+x.type+':'+x.id)).map(x=>({type:x.type,id:x.id,label:String(x.label||x.type).slice(0,160)}))}catch{}
+let spotifySelected=null;
+const spotifyUrl=x=>'https://open.spotify.com/'+x.type+'/'+x.id;
+function spotifySave(next){localStorage.setItem(spotifyKey,JSON.stringify(next));spotifyItems=next}
+function spotifyView(){
+ const selected=spotifyItems.find(x=>x.id===spotifySelected);
+ return '<h1>Spotify</h1><p class="sub">Save Spotify links and listen using the official player. No Premium or API key needed to save links. Playback may be limited to previews.</p><div class="bar"><button class="pri" data-a="spotifyadd">＋ Add Spotify link</button><button data-a="spotifysearch">Search Spotify</button></div>'+
+ (selected?'<h2>'+esc(selected.label)+'</h2><iframe title="Spotify player" src="https://open.spotify.com/embed/'+selected.type+'/'+selected.id+'" style="width:100%;height:'+(selected.type==='track'?152:352)+'px;border:0;border-radius:12px" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe><div class="bar"><a href="'+spotifyUrl(selected)+'" target="_blank" rel="noopener noreferrer">Open in Spotify</a><button data-a="spotifyclose">Close player</button></div>':'')+
+ '<h2>Saved Spotify links</h2>'+ (spotifyItems.length?'<div class="list">'+spotifyItems.map((x,i)=>'<div class="row"><button data-a="spotifyplay" data-i="'+i+'" aria-label="Open Spotify player">▶</button><div class="m"><b>'+esc(x.label)+'</b><span>'+esc(x.type)+'</span></div><a href="'+spotifyUrl(x)+'" target="_blank" rel="noopener noreferrer">Open</a><button data-a="spotifyremove" data-i="'+i+'" aria-label="Remove saved link">✕</button></div>').join('')+'</div>':'<p class="sub">No saved Spotify links yet. Copy a link using Spotify Share.</p>')+'<p class="sub">Online only. Saved links are separate from your local audio library and backups. Spotify controls playback.</p>';
+}
+act.spotifyadd=()=>dlg('<h2>Add Spotify link</h2><label>Spotify link or URI</label><input name="link" required placeholder="https://open.spotify.com/track/…"><label>Display name (optional)</label><input name="label" maxlength="160" placeholder="Song or playlist name">',async f=>{const x=spotifyLink(f.elements.link.value);if(!x)return toast('Paste a full Spotify track, album, playlist, show or episode link.');if(spotifyItems.some(y=>y.id===x.id&&y.type===x.type))return toast('Already saved');x.label=f.elements.label.value.trim()||x.type[0].toUpperCase()+x.type.slice(1)+' '+(spotifyItems.length+1);spotifySave([...spotifyItems,x]);spotifySelected=x.id;a.pause();render()});
+act.spotifyplay=el=>{const x=spotifyItems[Number(el.dataset.i)];if(x){a.pause();spotifySelected=x.id;render()}};
+act.spotifyclose=()=>{spotifySelected=null;render()};
+act.spotifyremove=el=>{const i=Number(el.dataset.i),x=spotifyItems[i];if(!x)return;spotifySave(spotifyItems.filter((_,j)=>j!==i));if(spotifySelected===x.id)spotifySelected=null;render()};
+act.spotifysearch=()=>dlg('<h2>Search Spotify</h2><label>Song, artist or album</label><input name="query" required>',f=>{const q=f.elements.query.value.trim();if(!q)return;const d=document.createElement('dialog');const link=document.createElement('a');link.href='https://open.spotify.com/search/'+encodeURIComponent(q);link.target='_blank';link.rel='noopener noreferrer';link.textContent='Open search in Spotify';const close=document.createElement('button');close.textContent='Close';close.onclick=()=>d.close();d.append(link,close);d.onclose=()=>d.remove();document.body.append(d);d.showModal()});
+a.addEventListener('play',()=>{if(spotifySelected){spotifySelected=null;const frame=document.querySelector('#main iframe[title="Spotify player"]');if(frame)render()}});
+
 const views={
+spotify:spotifyView,
 home(){const T=S.tracks,hr=new Date().getHours(),gr=hr<5?'Good night':hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
  if(!T.length)return`<h1>${gr}</h1><p class="sub">Listen. Collect. Discover.</p>`+ '<div class="bar"><a href="#/liked">Scan music screenshots</a></div>'+empty('Your local library is empty. Import audio files to begin.');
  const rec=[...T].sort(sorts.recent),al=albums().sort((x,y)=>y.added.localeCompare(x.added)),pls=S.pls.filter(p=>p.trackIds.some(ex)).sort((x,y)=>y.updatedAt.localeCompare(x.updatedAt)),fp=pls[0],fa=al[0];
@@ -181,8 +210,8 @@ liked(){const t=S.tracks.filter(x=>x.favorite);return`<h1>Liked Songs</h1>`+(t.l
 history(){const t=S.tracks.filter(x=>x.lastPlayed).sort(sorts.played);return`<h1>Recently Played</h1>`+(t.length?list(t):empty('Nothing played yet.',0))},
 queue(){if(!S.q.length)return`<h1>Queue</h1>`+empty('The queue is empty. Play a track to fill it.',0);
  return`<h1>Queue</h1><div class="bar"><button data-a="qsave">Save as playlist</button><button data-a="qclear">Clear upcoming</button></div><div class="list">${S.q.map((id,i)=>{const t=tr(id);return t?`<div class="row${i===S.i?' cur':''}"><button data-a="qjump" data-i="${i}" aria-label="Play">▶</button><div class="m"><b>${esc(t.title)}</b><span>${i<S.i?'Played':i===S.i?'Now playing':'Next'} · ${esc(t.artist||'Unknown artist')}</span></div>${i!==S.i?`<button data-a="qrm" data-i="${i}" aria-label="Remove from queue">✕</button>`:''}</div>`:''}).join('')}</div>`},
-settings(){return`<h1>Settings</h1><h2>Appearance</h2><div id="pulseAppearance"></div><h2>Storage</h2><p class="stat" id="stor">Calculating…</p><div class="bar"><button data-a="persist">Request persistent storage</button></div><p class="sub">Browsers can evict site data. Export backups regularly – they contain metadata, playlists and history, but not audio files.</p><h2>Backup</h2><div class="bar"><button data-a="export">Export backup</button><button data-a="importbk">Restore backup…</button><button data-a="clrhist">Clear listening history</button></div>`}};
-const nav=[['home','Home'],['library','Library'],['albums','Albums'],['artists','Artists'],['playlists','Playlists'],['liked','Liked'],['history','Recent'],['queue','Queue'],['settings','Settings']],parent={album:'albums',artist:'artists',playlist:'playlists'};
+settings(){return`<h1>Settings</h1><p class="sub">PULSE v0.6</p><h2>Appearance</h2><div id="pulseAppearance"></div><h2>Storage</h2><p class="stat" id="stor">Calculating…</p><div class="bar"><button data-a="persist">Request persistent storage</button></div><p class="sub">Browsers can evict site data. Export backups regularly – they contain metadata, playlists and history, but not audio files.</p><h2>Backup</h2><div class="bar"><button data-a="export">Export backup</button><button data-a="importbk">Restore backup…</button><button data-a="clrhist">Clear listening history</button></div>`}};
+const nav=[['home','Home'],['library','Library'],['albums','Albums'],['artists','Artists'],['playlists','Playlists'],['liked','Liked'],['spotify','Spotify'],['history','Recent'],['queue','Queue'],['settings','Settings']],parent={album:'albums',artist:'artists',playlist:'playlists'};
 function navIcon(k){
  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+({home:'<path d="M3 10 12 3l9 7v10h-6v-6H9v6H3z"/>',library:'<path d="M4 4v16M9 4v16M14 4l6 15"/>',playlists:'<path d="M3 5h14M3 10h14M3 15h8M19 10v9"/><circle cx="16" cy="19" r="3"/>',more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',search:'<circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/>',settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/>',back:'<path d="m15 5-7 7 7 7"/>'}[k]||'')+'</svg>'
 }
@@ -195,7 +224,7 @@ function mobileShell(key,html){
  const head=`<header class="mobile-head">${back?`<a class="mobile-icon" href="#/${back}" aria-label="Back">${navIcon('back')}</a>`:'<a class="mobile-brand" href="#/home">PULSE<span class="brand-dot">.</span></a>'}<div class="mobile-head-actions"><a class="mobile-icon" href="#/library" aria-label="Search library">${navIcon('search')}</a></div></header>`;
  const tabs=['library','albums','artists','liked','history','playlists'].includes(key)?`<nav class="page-tabs" aria-label="Collection">${[['library','Tracks'],['albums','Albums'],['artists','Artists'],['playlists','Playlists'],['liked','Liked'],['history','Recent']].map(([id,l])=>`<a href="#/${id}" class="${id===key?'selected':''}" ${id===key?'aria-current="page"':''}>${l}</a>`).join('')}</nav>`:'';
  const quick=key==='home'?'<div class="mobile-quick"><a href="#/library"><b>♫</b>All tracks</a><a href="#/liked"><b>♥</b>Liked songs</a><a href="#/albums"><b>▣</b>Albums</a><a href="#/history"><b>◷</b>Recent</a></div>':'';
- return head+tabs+quick+html;
+ return head+tabs+quick+(key==='home'||key==='liked'?'<div class="bar"><a href="#/spotify">♫ Spotify library</a></div>':'')+html;
 }
 async function render(){const rt=++S.rt,[v,ra]=(location.hash.slice(2)||'home').split('/'),key=Object.hasOwn(views,v)?v:'home';let html;
  try{if(key==='home')S.hist=await all('history').catch(()=>[]);if(rt!==S.rt)return;S.groups=[];html=views[key](ra?decodeURIComponent(ra):'')}catch(e){html=`<div class="empty">Could not display this page: ${esc(e.message)}</div>`}
