@@ -2,7 +2,7 @@
 
 **Listen. Collect. Discover.**
 
-PULSE is a free, standalone, local-first personal music player for mobile and desktop. It runs entirely in your browser and does not require NEXUS, an account, a backend, API keys or a build step.
+PULSE is a free, standalone, local-first personal music player for mobile and desktop. It runs entirely in your browser and does not require an account, a backend, API keys or a build step.
 
 [**Open PULSE**](https://theparsifal21.github.io/pulse/)
 
